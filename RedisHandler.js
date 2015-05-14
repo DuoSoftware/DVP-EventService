@@ -1,5 +1,6 @@
 var redis = require("redis");
 var Config = require('config');
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
 var redisIp = Config.Redis.IpAddress;
 var redisPort = Config.Redis.Port;
@@ -11,10 +12,12 @@ var RedisSubscribe = function(channel)
     try
     {
         var sub = client.subscribe(channel);
+
+        logger.debug('[DVP-EventService.RedisSubscribe] REDIS SUBSCRIBED');
     }
     catch(ex)
     {
-
+        logger.error('[DVP-EventService.RedisSubscribe] REDIS ERROR', ex);
     }
 };
 
@@ -26,6 +29,14 @@ var SetObject = function(key, value, callback)
 
         client.set(key, value, function(err, response)
         {
+            if(err)
+            {
+                logger.error('[DVP-EventService.SetObject] REDIS ERROR', err);
+            }
+            else
+            {
+                logger.debug('[DVP-EventService.SetObject] REDIS SUCCESS', err);
+            }
             callback(err, response);
         });
 
@@ -62,6 +73,14 @@ var GetFromSet = function(setName, callback)
         {
             client.smembers(setName).keys("*", function (err, setValues)
             {
+                if(err)
+                {
+                    logger.error('[DVP-EventService.GetFromSet] REDIS ERROR', err);
+                }
+                else
+                {
+                    logger.debug('[DVP-EventService.GetFromSet] REDIS SUCCESS', err);
+                }
                 callback(err, setValues);
             });
         }

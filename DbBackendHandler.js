@@ -1,4 +1,5 @@
 var dbModel = require('DVP-DBModels');
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
 var GetEventDataBySessionId = function(sessionId, callback)
 {
@@ -8,6 +9,14 @@ var GetEventDataBySessionId = function(sessionId, callback)
         dbModel.DVPEvent.findAll({where: [{SessionId: sessionId}], order: ['EventTime']})
             .complete(function (err, evtList)
             {
+                if(err)
+                {
+                    logger.error('[DVP-EventService.GetEventDataBySessionId] PGSQL Get dvp event records for sessionId query failed', err);
+                }
+                else
+                {
+                    logger.debug('[DVP-EventService.GetEventDataBySessionId] PGSQL Get dvp event records for sessionId query success');
+                }
                 callback(err, evtList);
             });
     }
@@ -25,6 +34,15 @@ var GetDevEventDataBySessionId = function(sessionId, callback)
         dbModel.DVPEvent.findAll({where: [{SessionId: sessionId},{EventCategory: 'DEVELOPER'}], order: ['EventTime']})
             .complete(function (err, evtList)
             {
+                if(err)
+                {
+                    logger.error('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for sessionId and cat query failed', err);
+                }
+                else
+                {
+                    logger.debug('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for sessionId and cat query success');
+                }
+
                 callback(err, evtList);
             });
     }
@@ -42,6 +60,15 @@ var GetEventDataByClassTypeCat = function(evtClass, evtType, evtCategory, callba
         dbModel.DVPEvent.findAll({where: [{EventClass: evtClass},{EventType: evtType},{EventCategory: evtCategory}], order: ['EventTime']})
             .complete(function (err, evtList)
             {
+                if(err)
+                {
+                    logger.error('[DVP-EventService.GetEventDataByClassTypeCat] PGSQL Get dvp event records for ClassTypeCat query failed', err);
+                }
+                else
+                {
+                    logger.debug('[DVP-EventService.GetEventDataByClassTypeCat] PGSQL Get dvp event records for ClassTypeCat query success');
+                }
+
                 callback(err, evtList);
             });
     }
@@ -58,6 +85,14 @@ var GetCallCDRForAppAndSessionId = function(appId, sessionId, callback)
         dbModel.CallCDR.find({where: [{Uuid: sessionId},{AppId: appId}]})
             .complete(function (err, cdr)
             {
+                if(err)
+                {
+                    logger.error('[DVP-EventService.GetCallCDRForAppAndSessionId] PGSQL Get dvp event records query failed', err);
+                }
+                else
+                {
+                    logger.debug('[DVP-EventService.GetCallCDRForAppAndSessionId] PGSQL Get dvp event records query success');
+                }
                 callback(err, cdr);
             });
     }
@@ -73,22 +108,18 @@ var AddEventData = function(eventInfo, callback)
     {
         eventInfo
             .save()
-            .complete(function (err) {
-                try {
+            .complete(function (err)
+            {
                     if (err)
                     {
+                        logger.error('[DVP-EventService.AddEventData] PGSQL save dvp event record query failed', err);
                         callback(err, false);
                     }
                     else
                     {
+                        logger.debug('[DVP-EventService.AddEventData] PGSQL save dvp event record query success');
                         callback(undefined, true);
                     }
-                }
-                catch (ex)
-                {
-                    callback(ex, false);
-                }
-
             })
     }
     catch(ex)

@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
+    "DVP-Common": "DuoSoftware/DVP-Common",
     "DVP-DBModels": "DuoSoftware/DVP-DBModels",
     "redis": "^0.12.1",
     "config": "^1.12.0"

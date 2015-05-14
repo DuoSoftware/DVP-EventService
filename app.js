@@ -5,6 +5,8 @@ var dbModel = require('DVP-DBModels');
 var restify = require('restify');
 var config = require('config');
 var stringify = require('stringify');
+var nodeUuid = require('node-uuid');
+var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
@@ -21,14 +23,23 @@ server.use(restify.bodyParser());
 
 server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsBySessionId/:sessionId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     var emptyArr = [];
     try
     {
         var sessionId = req.params.sessionId;
+        logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - HTTP Request Received - Params - sessionId : %s', reqId, sessionId);
 
         dbBackendHandler.GetEventDataBySessionId(sessionId, function(err, evtList)
         {
+            if(err)
+            {
+                logger.error('[DVP-EventService.GetAllEventsBySessionId] - [%s] - dbBackendHandler.GetEventDataBySessionId threw an exception', reqId, err);
+            }
+
             var jsonStr = JSON.stringify(evtList);
+
+            logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonStr);
 
             res.end(jsonStr);
         })
@@ -36,7 +47,9 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsBySessionId/:s
     }
     catch(ex)
     {
+        logger.error('[DVP-EventService.GetAllEventsBySessionId] - [%s] - Exception occurred', reqId, ex);
         var jsonString = JSON.stringify(emptyArr);
+        logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 
@@ -46,11 +59,14 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsBySessionId/:s
 
 server.get('/DVP/API/' + hostVersion + '/EventService/GetAllDevEventsBySessionId/:sessionId/:appId', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     var emptyArr = [];
     try
     {
         var sessionId = req.params.sessionId;
         var appId = req.params.appId;
+
+        logger.debug('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - HTTP Request Received - Params - sessionId : %s, appId : %s', reqId, sessionId, appId);
 
         dbBackendHandler.GetCallCDRForAppAndSessionId(appId, sessionId, function(err, cdr)
         {
@@ -58,14 +74,27 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllDevEventsBySessionId
             {
                 dbBackendHandler.GetDevEventDataBySessionId(sessionId, function(err, evtList)
                 {
+                    if(err)
+                    {
+                        logger.error('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - dbBackendHandler.GetDevEventDataBySessionId threw an exception', reqId, err);
+                    }
+
                     var jsonStr = JSON.stringify(evtList);
+
+                    logger.debug('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonStr);
 
                     res.end(jsonStr);
                 })
             }
             else
             {
+                if(err)
+                {
+                    logger.error('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - dbBackendHandler.GetCallCDRForAppAndSessionId threw an exception', reqId, err);
+                }
                 var jsonStr = JSON.stringify(emptyArr);
+
+                logger.debug('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonStr);
 
                 res.end(jsonStr);
             }
@@ -76,7 +105,9 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllDevEventsBySessionId
     }
     catch(ex)
     {
+        logger.error('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - Exception occurred', reqId, ex);
         var jsonString = JSON.stringify(emptyArr);
+        logger.debug('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 
@@ -86,6 +117,7 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllDevEventsBySessionId
 
 server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsByClassTypeCategory/:eventClass/:eventType/:eventCategory', function(req, res, next)
 {
+    var reqId = nodeUuid.v1();
     var emptyArr = [];
     try
     {
@@ -93,9 +125,17 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsByClassTypeCat
         var evtType = req.params.eventType;
         var evtCategory = req.params.eventCategory;
 
+        logger.debug('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - HTTP Request Received - Params - evtClass : %s, evtType : %s, evtCategory : %s', reqId, evtType, evtCategory);
+
         dbBackendHandler.GetEventDataByClassTypeCat(evtClass, evtType, evtCategory, function(err, evtList)
         {
+            if(err)
+            {
+                logger.error('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - dbBackendHandler.GetEventDataByClassTypeCat threw an exception', reqId, err);
+            }
             var jsonStr = JSON.stringify(evtList);
+
+            logger.debug('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - API RESPONSE : %s', reqId, jsonStr);
 
             res.end(jsonStr);
         })
@@ -103,7 +143,9 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsByClassTypeCat
     }
     catch(ex)
     {
+        logger.error('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - Exception occurred', reqId, ex);
         var jsonString = JSON.stringify(emptyArr);
+        logger.debug('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 
@@ -118,6 +160,10 @@ redisHandler.redisClient.on('message', function(channel, message)
 {
     if(channel && channel === 'SYS:MONITORING:DVPEVENTS')
     {
+        var reqId = nodeUuid.v1();
+
+        logger.debug('[DVP-EventService.DVPEVENTS] - [%s] - Event Received - Params - message : %s, appId : %s', reqId, message);
+
         if(message)
         {
             var evtObj = JSON.parse(message);
@@ -151,11 +197,7 @@ redisHandler.redisClient.on('message', function(channel, message)
             {
                 if(err)
                 {
-                    console.log(err);
-                }
-                else
-                {
-                    console.log('Event Data Added');
+                    logger.error('[DVP-EventService.DVPEVENTS] - [%s] - dbBackendHandler.AddEventData threw an exception', reqId, err);
                 }
             })
         }
