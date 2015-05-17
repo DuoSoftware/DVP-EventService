@@ -1,6 +1,7 @@
 var dbModel = require('DVP-DBModels');
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 
+
 var GetEventDataBySessionId = function(sessionId, callback)
 {
     var emptyList = [];

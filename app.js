@@ -7,6 +7,7 @@ var config = require('config');
 var stringify = require('stringify');
 var nodeUuid = require('node-uuid');
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
@@ -37,18 +38,16 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsBySessionId/:s
                 logger.error('[DVP-EventService.GetAllEventsBySessionId] - [%s] - dbBackendHandler.GetEventDataBySessionId threw an exception', reqId, err);
             }
 
-            var jsonStr = JSON.stringify(evtList);
-
-            logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-
-            res.end(jsonStr);
+            var jsonString = messageFormatter.FormatMessage(err, "", undefined, evtList);
+            logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
+            res.end(jsonString);
         })
 
     }
     catch(ex)
     {
         logger.error('[DVP-EventService.GetAllEventsBySessionId] - [%s] - Exception occurred', reqId, ex);
-        var jsonString = JSON.stringify(emptyArr);
+        var jsonString = messageFormatter.FormatMessage(ex, "", undefined, emptyArr);
         logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
@@ -79,11 +78,9 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllDevEventsBySessionId
                         logger.error('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - dbBackendHandler.GetDevEventDataBySessionId threw an exception', reqId, err);
                     }
 
-                    var jsonStr = JSON.stringify(evtList);
-
-                    logger.debug('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-
-                    res.end(jsonStr);
+                    var jsonString = messageFormatter.FormatMessage(err, "", undefined, evtList);
+                    logger.debug('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
                 })
             }
             else
@@ -92,11 +89,9 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllDevEventsBySessionId
                 {
                     logger.error('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - dbBackendHandler.GetCallCDRForAppAndSessionId threw an exception', reqId, err);
                 }
-                var jsonStr = JSON.stringify(emptyArr);
-
-                logger.debug('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-
-                res.end(jsonStr);
+                var jsonString = messageFormatter.FormatMessage(err, "", undefined, emptyArr);
+                logger.debug('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
             }
 
 
@@ -106,7 +101,7 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllDevEventsBySessionId
     catch(ex)
     {
         logger.error('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - Exception occurred', reqId, ex);
-        var jsonString = JSON.stringify(emptyArr);
+        var jsonString = messageFormatter.FormatMessage(ex, "", undefined, emptyArr);
         logger.debug('[DVP-EventService.GetAllDevEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
@@ -133,18 +128,16 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsByClassTypeCat
             {
                 logger.error('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - dbBackendHandler.GetEventDataByClassTypeCat threw an exception', reqId, err);
             }
-            var jsonStr = JSON.stringify(evtList);
-
-            logger.debug('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - API RESPONSE : %s', reqId, jsonStr);
-
-            res.end(jsonStr);
+            var jsonString = messageFormatter.FormatMessage(err, "", undefined, evtList);
+            logger.debug('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - API RESPONSE : %s', reqId, jsonString);
+            res.end(jsonString);
         })
 
     }
     catch(ex)
     {
         logger.error('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - Exception occurred', reqId, ex);
-        var jsonString = JSON.stringify(emptyArr);
+        var jsonString = messageFormatter.FormatMessage(ex, "", undefined, emptyArr);
         logger.debug('[DVP-EventService.GetAllEventsByClassTypeCategory] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
