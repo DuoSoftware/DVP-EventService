@@ -22,7 +22,7 @@ server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
-server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsBySessionId/:sessionId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/EventService/Events/SessionId/:sessionId', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
@@ -56,7 +56,7 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsBySessionId/:s
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/EventService/GetAllDevEventsBySessionId/:sessionId/:appId', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/EventService/Events/App/:appId/SessionId/:sessionId/', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
@@ -110,7 +110,7 @@ server.get('/DVP/API/' + hostVersion + '/EventService/GetAllDevEventsBySessionId
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/EventService/GetAllEventsByClassTypeCategory/:eventClass/:eventType/:eventCategory', function(req, res, next)
+server.get('/DVP/API/' + hostVersion + '/EventService/Events/EventClass/:eventClass/EventType/:eventType/EventCategory/:eventCategory', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
