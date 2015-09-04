@@ -6,12 +6,16 @@ var restify = require('restify');
 var config = require('config');
 var stringify = require('stringify');
 var nodeUuid = require('node-uuid');
+var amqp = require('amqp');
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
 var hostVersion = config.Host.Version;
+
+var rmqIp = config.RabbitMQ.IpAddress;
+var rmqPort = config.RabbitMQ.Port;
 
 var server = restify.createServer({
     name: 'localhost',
@@ -21,6 +25,25 @@ var server = restify.createServer({
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
+
+var amqpConState = 'CLOSED';
+
+var connection = amqp.createConnection({ host: rmqIp, port: rmqPort});
+
+connection.on('connect', function()
+{
+    amqpConState = 'CONNECTED';
+});
+
+connection.on('ready', function()
+{
+    amqpConState = 'READY';
+});
+
+connection.on('error', function()
+{
+    amqpConState = 'CLOSE';
+});
 
 server.get('/DVP/API/' + hostVersion + '/EventService/Events/SessionId/:sessionId', function(req, res, next)
 {
@@ -185,6 +208,21 @@ redisHandler.redisClient.on('message', function(channel, message)
                 EventParams: JSON.stringify(evtParams)
 
             });
+
+            if(amqpConState === 'READY')
+            {
+                if(evt.EventClass && evt.EventType && evt.EventCategory)
+                {
+                    var exc = connection.exchange('amq.topic');
+
+                    var pattern = evt.EventClass + '.' + evt.EventType + '.' + evt.EventCategory;
+
+                    exc.on('open', function()
+                    {
+                        exc.publish(pattern, message);
+                    })
+                }
+            }
 
             dbBackendHandler.AddEventData(evt, function(err, result)
             {

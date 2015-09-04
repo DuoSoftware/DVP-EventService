@@ -16,6 +16,11 @@ module.exports = {
 
     },
 
+    "RabbitMQ": {
+        "IpAddress":"SYS_RABBITMQ_HOST",
+        "Port":"SYS_RABBITMQ_PORT"
+    },
+
     "Host":{
         "Port":"HOST_EVENTSERVICE_PORT",
         "Version":"HOST_VERSION"
