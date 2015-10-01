@@ -1,5 +1,5 @@
-var dbModel = require('DVP-DBModels');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var dbModel = require('dvp-dbmodels');
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
 var GetEventDataBySessionId = function(sessionId, callback)
@@ -8,17 +8,15 @@ var GetEventDataBySessionId = function(sessionId, callback)
     try
     {
         dbModel.DVPEvent.findAll({where: [{SessionId: sessionId}], order: ['EventTime']})
-            .complete(function (err, evtList)
+            .then(function (evtList)
             {
-                if(err)
-                {
-                    logger.error('[DVP-EventService.GetEventDataBySessionId] PGSQL Get dvp event records for sessionId query failed', err);
-                }
-                else
-                {
-                    logger.debug('[DVP-EventService.GetEventDataBySessionId] PGSQL Get dvp event records for sessionId query success');
-                }
-                callback(err, evtList);
+                logger.debug('[DVP-EventService.GetEventDataBySessionId] PGSQL Get dvp event records for sessionId query success');
+
+                callback(undefined, evtList);
+            }).catch(function(err)
+            {
+                logger.error('[DVP-EventService.GetEventDataBySessionId] PGSQL Get dvp event records for sessionId query failed', err);
+                callback(err, emptyList);
             });
     }
     catch(ex)
@@ -33,18 +31,15 @@ var GetDevEventDataBySessionId = function(sessionId, callback)
     try
     {
         dbModel.DVPEvent.findAll({where: [{SessionId: sessionId},{EventCategory: 'DEVELOPER'}], order: ['EventTime']})
-            .complete(function (err, evtList)
+            .this(function (evtList)
             {
-                if(err)
-                {
-                    logger.error('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for sessionId and cat query failed', err);
-                }
-                else
-                {
-                    logger.debug('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for sessionId and cat query success');
-                }
+                logger.debug('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for sessionId and cat query success');
 
-                callback(err, evtList);
+                callback(undefined, evtList);
+            }).catch(function(err)
+            {
+                logger.error('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for sessionId and cat query failed', err);
+                callback(err, emptyList);
             });
     }
     catch(ex)
@@ -59,18 +54,15 @@ var GetEventDataByClassTypeCat = function(evtClass, evtType, evtCategory, callba
     try
     {
         dbModel.DVPEvent.findAll({where: [{EventClass: evtClass},{EventType: evtType},{EventCategory: evtCategory}], order: ['EventTime']})
-            .complete(function (err, evtList)
+            .then(function (evtList)
             {
-                if(err)
-                {
-                    logger.error('[DVP-EventService.GetEventDataByClassTypeCat] PGSQL Get dvp event records for ClassTypeCat query failed', err);
-                }
-                else
-                {
-                    logger.debug('[DVP-EventService.GetEventDataByClassTypeCat] PGSQL Get dvp event records for ClassTypeCat query success');
-                }
+                logger.debug('[DVP-EventService.GetEventDataByClassTypeCat] PGSQL Get dvp event records for ClassTypeCat query success');
 
-                callback(err, evtList);
+                callback(undefined, evtList);
+            }).catch(function(err)
+            {
+                logger.error('[DVP-EventService.GetEventDataByClassTypeCat] PGSQL Get dvp event records for ClassTypeCat query failed', err);
+                callback(err, emptyList);
             });
     }
     catch(ex)
@@ -84,17 +76,15 @@ var GetCallCDRForAppAndSessionId = function(appId, sessionId, callback)
     try
     {
         dbModel.CallCDR.find({where: [{Uuid: sessionId},{AppId: appId}]})
-            .complete(function (err, cdr)
+            .then(function (cdr)
             {
-                if(err)
-                {
-                    logger.error('[DVP-EventService.GetCallCDRForAppAndSessionId] PGSQL Get dvp event records query failed', err);
-                }
-                else
-                {
-                    logger.debug('[DVP-EventService.GetCallCDRForAppAndSessionId] PGSQL Get dvp event records query success');
-                }
-                callback(err, cdr);
+                logger.debug('[DVP-EventService.GetCallCDRForAppAndSessionId] PGSQL Get dvp event records query success');
+                callback(undefined, cdr);
+
+            }).catch(function(err)
+            {
+                logger.error('[DVP-EventService.GetCallCDRForAppAndSessionId] PGSQL Get dvp event records query failed', err);
+                callback(err, undefined);
             });
     }
     catch(ex)
@@ -109,18 +99,15 @@ var AddEventData = function(eventInfo, callback)
     {
         eventInfo
             .save()
-            .complete(function (err)
+            .then(function (rsp)
             {
-                    if (err)
-                    {
-                        logger.error('[DVP-EventService.AddEventData] PGSQL save dvp event record query failed', err);
-                        callback(err, false);
-                    }
-                    else
-                    {
-                        logger.debug('[DVP-EventService.AddEventData] PGSQL save dvp event record query success');
-                        callback(undefined, true);
-                    }
+                logger.debug('[DVP-EventService.AddEventData] PGSQL save dvp event record query success');
+                callback(undefined, true);
+
+            }).catch(function(err)
+            {
+                logger.error('[DVP-EventService.AddEventData] PGSQL save dvp event record query failed', err);
+                callback(err, false);
             })
     }
     catch(ex)

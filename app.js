@@ -1,14 +1,14 @@
 //Subscribe to event channel
 var redisHandler = require('./RedisHandler.js');
 var dbBackendHandler = require('./DbBackendHandler.js');
-var dbModel = require('DVP-DBModels');
+var dbModel = require('dvp-dbmodels');
 var restify = require('restify');
 var config = require('config');
 var stringify = require('stringify');
 var nodeUuid = require('node-uuid');
 var amqp = require('amqp');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
-var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
