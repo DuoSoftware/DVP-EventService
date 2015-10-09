@@ -13,7 +13,7 @@ module.exports = {
   },
 
   "RabbitMQ": {
-    "IpAddress":"192.168.3.200",
+    "IpAddress":"192.168.0.89",
     "Port":"5672"
   },
 

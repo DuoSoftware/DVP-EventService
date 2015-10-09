@@ -45,7 +45,7 @@ connection.on('error', function()
     amqpConState = 'CLOSE';
 });
 
-server.get('/DVP/API/' + hostVersion + '/EventService/Events/SessionId/:sessionId', function(req, res, next)
+server.get('/DVP/API/:version/EventService/Events/SessionId/:sessionId', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
@@ -79,7 +79,7 @@ server.get('/DVP/API/' + hostVersion + '/EventService/Events/SessionId/:sessionI
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/EventService/Events/App/:appId/SessionId/:sessionId/', function(req, res, next)
+server.get('/DVP/API/:version/EventService/Events/App/:appId/SessionId/:sessionId/', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
@@ -133,7 +133,7 @@ server.get('/DVP/API/' + hostVersion + '/EventService/Events/App/:appId/SessionI
 
 });
 
-server.get('/DVP/API/' + hostVersion + '/EventService/Events/EventClass/:eventClass/EventType/:eventType/EventCategory/:eventCategory', function(req, res, next)
+server.get('/DVP/API/:version/EventService/Events/EventClass/:eventClass/EventType/:eventType/EventCategory/:eventCategory', function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
