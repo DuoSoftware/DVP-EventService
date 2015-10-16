@@ -23,6 +23,6 @@ module.exports = {
 
     "Host":{
         "Port":"HOST_EVENTSERVICE_PORT",
-        "Version":"HOST_EVENTSERVICE_VERSION"
+        "Version":"HOST_VERSION"
     }
 };
