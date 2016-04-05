@@ -8,8 +8,9 @@ module.exports = {
     "Database":"dvpdb"
   },
   "Redis": {
-    "IpAddress":"localhost",
-    "Port":"6379"
+    "IpAddress":"127.0.0.1",
+    "Port":"6379",
+    "Password": "123"
   },
 
   "RabbitMQ": {
@@ -21,5 +22,14 @@ module.exports = {
     "Ip":"0.0.0.0",
     "Port":"8823",
     "Version":"1.0.0.0"
+  },
+
+  "Security":
+  {
+    "ip": "127.0.0.1",
+    "port": "6379",
+    "user": "123",
+    "password": "123"
+
   }
 };

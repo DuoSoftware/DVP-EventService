@@ -4,8 +4,13 @@ var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 var redisIp = Config.Redis.IpAddress;
 var redisPort = Config.Redis.Port;
+var redisPassword = Config.Redis.Password;
 
 var client = redis.createClient(redisPort, redisIp);
+
+client.auth(redisPassword, function (redisResp) {
+    console.log("Redis Auth Response : " + redisResp);
+});
 
 var RedisSubscribe = function(channel)
 {
@@ -18,6 +23,35 @@ var RedisSubscribe = function(channel)
     catch(ex)
     {
         logger.error('[DVP-EventService.RedisSubscribe] REDIS ERROR', ex);
+    }
+};
+
+var GetObject = function(reqId, key, callback)
+{
+    try
+    {
+        logger.debug('[DVP-DynamicConfigurationGenerator.GetObject] - [%s] - Method Params - key : %s', reqId, key);
+
+
+        client.get(key, function(err, response)
+        {
+            if(err)
+            {
+                logger.error('[DVP-DynamicConfigurationGenerator.GetObject] - [%s] - REDIS GET failed', reqId, err);
+            }
+            else
+            {
+                logger.debug('[DVP-DynamicConfigurationGenerator.GetObject] - [%s] - REDIS GET success', reqId);
+            }
+
+            callback(err, JSON.parse(response));
+        });
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-DynamicConfigurationGenerator.GetObject] - [%s] - Exception occurred', reqId, ex);
+        callback(ex, undefined);
     }
 };
 
@@ -107,4 +141,5 @@ module.exports.SetObject = SetObject;
 module.exports.PublishToRedis = PublishToRedis;
 module.exports.GetFromSet = GetFromSet;
 module.exports.RedisSubscribe = RedisSubscribe;
+module.exports.GetObject = GetObject;
 module.exports.redisClient = client;
