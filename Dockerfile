@@ -7,7 +7,7 @@
 
 #EXPOSE 8823
 
-FROM node:argon
+FROM node:5.10.0
 RUN git clone git://github.com/DuoSoftware/DVP-EventService.git /usr/local/src/eventservice
 RUN cd /usr/local/src/eventservice;
 WORKDIR /usr/local/src/eventservice
