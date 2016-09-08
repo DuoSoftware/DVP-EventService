@@ -22,12 +22,11 @@ var server = restify.createServer({
     version: '1.0.0'
 });
 
+restify.CORS.ALLOW_HEADERS.push('authorization');
 server.use(restify.CORS());
 server.use(restify.fullResponse());
+
 server.pre(restify.pre.userAgentConnection());
-
-
-restify.CORS.ALLOW_HEADERS.push('authorization');
 
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
@@ -253,6 +252,10 @@ redisHandler.redisClient.on('message', function(channel, message)
 
 });
 
+server.listen(hostPort, hostIp, function () {
+    console.log('%s listening at %s', server.name, server.url);
+});
+
 function Crossdomain(req,res,next){
 
 
@@ -281,7 +284,3 @@ function Clientaccesspolicy(req,res,next){
 
 server.get("/crossdomain.xml",Crossdomain);
 server.get("/clientaccesspolicy.xml",Clientaccesspolicy);
-
-server.listen(hostPort, hostIp, function () {
-    console.log('%s listening at %s', server.name, server.url);
-});
