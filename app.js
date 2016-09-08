@@ -195,6 +195,16 @@ redisHandler.redisClient.on('message', function(channel, message)
             var tenantId = evtObj['TenantId'];
             var sessionId = evtObj['SessionId'];
 
+            if(!companyId)
+            {
+                companyId = -1;
+            }
+
+            if(!tenantId)
+            {
+                tenantId = -1;
+            }
+
             var evt = dbModel.DVPEvent.build({
                 SessionId: sessionId,
                 EventName: evtName,
