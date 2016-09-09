@@ -3,6 +3,9 @@ var redisHandler = require('./RedisHandler.js');
 var dbBackendHandler = require('./DbBackendHandler.js');
 var dbModel = require('dvp-dbmodels');
 var restify = require('restify');
+var jwt = require('restify-jwt');
+var secret = require('dvp-common/Authentication/Secret.js');
+var authorization = require('dvp-common/Authentication/Authorization.js');
 var config = require('config');
 var stringify = require('stringify');
 var nodeUuid = require('node-uuid');
@@ -31,6 +34,7 @@ server.pre(restify.pre.userAgentConnection());
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
+server.use(jwt({secret: secret.Secret}));
 
 var amqpConState = 'CLOSED';
 
@@ -51,12 +55,19 @@ connection.on('error', function()
     amqpConState = 'CLOSE';
 });
 
-server.get('/DVP/API/:version/EventService/Events/SessionId/:sessionId', function(req, res, next)
+server.get('/DVP/API/:version/EventService/Events/SessionId/:sessionId', authorization({resource:"events", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
     try
     {
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
         var sessionId = req.params.sessionId;
         logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - HTTP Request Received - Params - sessionId : %s', reqId, sessionId);
 
@@ -85,10 +96,19 @@ server.get('/DVP/API/:version/EventService/Events/SessionId/:sessionId', functio
 
 });
 
-server.get('/DVP/API/:version/EventService/Events/App/:appId/SessionId/:sessionId/', function(req, res, next)
+server.get('/DVP/API/:version/EventService/Events/App/:appId/SessionId/:sessionId/', authorization({resource:"events", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
+
+    var companyId = req.user.company;
+    var tenantId = req.user.tenant;
+
+    if (!companyId || !tenantId)
+    {
+        throw new Error("Invalid company or tenant");
+    }
+
     try
     {
         var sessionId = req.params.sessionId;
@@ -139,10 +159,19 @@ server.get('/DVP/API/:version/EventService/Events/App/:appId/SessionId/:sessionI
 
 });
 
-server.get('/DVP/API/:version/EventService/Events/EventClass/:eventClass/EventType/:eventType/EventCategory/:eventCategory', function(req, res, next)
+server.get('/DVP/API/:version/EventService/Events/EventClass/:eventClass/EventType/:eventType/EventCategory/:eventCategory', authorization({resource:"events", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
+
+    var companyId = req.user.company;
+    var tenantId = req.user.tenant;
+
+    if (!companyId || !tenantId)
+    {
+        throw new Error("Invalid company or tenant");
+    }
+
     try
     {
         var evtClass = req.params.eventClass;
