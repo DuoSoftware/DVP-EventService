@@ -5,12 +5,12 @@
 #RUN cd /usr/local/src/eventservice; npm install
 #CMD ["nodejs", "/usr/local/src/eventservice/app.js"]
 
-#EXPOSE 8823
+#EXPOSE 8822
 
 FROM node:5.10.0
 RUN git clone git://github.com/DuoSoftware/DVP-EventService.git /usr/local/src/eventservice
 RUN cd /usr/local/src/eventservice;
 WORKDIR /usr/local/src/eventservice
 RUN npm install
-EXPOSE 8823
+EXPOSE 8822
 CMD [ "node", "/usr/local/src/eventservice/app.js" ]
