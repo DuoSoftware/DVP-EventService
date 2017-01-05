@@ -327,7 +327,7 @@ redisHandler.redisClient.on('message', function(channel, message)
             }
 
 
-            if(evtParams && util.isArray(evtParams)){
+            if(evtParams && util.isObject(evtParams)){
 
                 evtParams = JSON.stringify(evtParams);
             }
