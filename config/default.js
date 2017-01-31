@@ -7,10 +7,12 @@ module.exports = {
     "Host":"104.236.231.11",
     "Database":"duo"
   },
-  "Redis": {
-    "IpAddress":"127.0.0.1",
-    "Port":"6379",
-    "Password": "123"
+  "Redis":
+  {
+    "ip": "45.55.142.207",
+    "port": "6389",
+    "password":"DuoS123"
+
   },
 
   "RabbitMQ": {
@@ -26,10 +28,9 @@ module.exports = {
 
   "Security":
   {
-    "ip": "127.0.0.1",
-    "port": "6379",
-    "user": "123",
-    "password": "123"
-
+    "ip" : "45.55.142.207",
+    "port": "6389",
+    "user": "duo",
+    "password": "DuoS123"
   }
 };

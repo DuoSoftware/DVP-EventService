@@ -25,13 +25,69 @@ var GetEventDataBySessionId = function(sessionId, callback)
     }
 };
 
+
+
+
+
+
+
+var GetDevEventDataByAppIdAndDateRange = function(type, appId,starttime,endtime, callback)
+{
+
+
+
+    var query = {};
+    if(starttime &&  endtime){
+
+        query.createdAt =  {
+            $lte: new Date(endtime),
+            $gte: new Date(starttime)
+        }
+    }
+
+
+    if (appId)
+    {
+        query.EventData = appId
+    }
+
+    if(type){
+
+        query.EventType = type;
+    }
+
+
+    try {
+
+
+        var emptyList = [];
+        dbModel.DVPEvent.findAll({
+                attributes: ['EventParams',
+                    [dbModel.SequelizeConn.fn('count', dbModel.SequelizeConn.col('SessionId')), 'count']], where: query, group: ['CSDB_DVPEvent.EventParams']
+            })
+            .then(function (evtList) {
+                logger.debug('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for appid and type success');
+                callback(undefined, evtList);
+            }).catch(function (err) {
+            logger.error('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for appid and type query failed', err);
+            callback(err, emptyList);
+        });
+    }
+    catch(ex)
+    {
+        callback(ex, emptyList);
+    }
+};
+
+
+
 var GetDevEventDataBySessionId = function(sessionId, callback)
 {
     var emptyList = [];
     try
     {
         dbModel.DVPEvent.findAll({where: [{SessionId: sessionId},{EventCategory: 'DEVELOPER'}], order: ['EventTime']})
-            .this(function (evtList)
+            .then(function (evtList)
             {
                 logger.debug('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for sessionId and cat query success');
 
@@ -93,6 +149,7 @@ var GetCallCDRForAppAndSessionId = function(appId, sessionId, callback)
     }
 };
 
+
 var AddEventData = function(eventInfo, callback)
 {
     try
@@ -121,3 +178,4 @@ module.exports.GetEventDataBySessionId = GetEventDataBySessionId;
 module.exports.GetEventDataByClassTypeCat = GetEventDataByClassTypeCat;
 module.exports.GetCallCDRForAppAndSessionId = GetCallCDRForAppAndSessionId;
 module.exports.GetDevEventDataBySessionId = GetDevEventDataBySessionId;
+module.exports.GetDevEventDataByAppIdAndDateRange = GetDevEventDataByAppIdAndDateRange;

@@ -12,6 +12,7 @@ var nodeUuid = require('node-uuid');
 var amqp = require('amqp');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var util = require('util');
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
@@ -224,6 +225,71 @@ server.get('/DVP/API/:version/EventService/Events/EventClass/:eventClass/EventTy
 
 });
 
+server.get('/DVP/API/:version/EventService/Events/App/:appId/Type/:type/NodeCount', authorization({resource:"events", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var emptyArr = [];
+
+    var companyId = req.user.company;
+    var tenantId = req.user.tenant;
+
+    if (!companyId || !tenantId)
+    {
+        throw new Error("Invalid company or tenant");
+    }
+
+    try {
+        var type = req.params.type;
+        var appId = req.params.appId;
+
+        var start;
+        var end;
+        if(req.query){
+
+            start = req.query['start'];
+            end = req.query['end'];
+
+        }
+
+
+        //logger.debug('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - HTTP Request Received - Params - sessionId : %s, appId : %s', reqId, sessionId, appId);
+
+
+        dbBackendHandler.GetDevEventDataByAppIdAndDateRange(type,appId,start,end, function (err, evtList) {
+            if (err) {
+                logger.error('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - dbBackendHandler.GetDevEventDataBySessionId threw an exception', reqId, err);
+                var jsonString = messageFormatter.FormatMessage(err, "Operation Fail", false, emptyArr);
+                logger.debug('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else {
+                var jsonString = messageFormatter.FormatMessage(null, "Operation Success", true, evtList);
+                logger.debug('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+        })
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - Exception occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "Operation Fail", false, emptyArr);
+        logger.debug('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+
+
+
+
+
+
 
 redisHandler.RedisSubscribe('SYS:MONITORING:DVPEVENTS');
 
@@ -260,6 +326,12 @@ redisHandler.redisClient.on('message', function(channel, message)
                 tenantId = -1;
             }
 
+
+            if(evtParams && util.isObject(evtParams)){
+
+                evtParams = JSON.stringify(evtParams);
+            }
+
             var evt = dbModel.DVPEvent.build({
                 SessionId: sessionId,
                 EventName: evtName,
@@ -270,7 +342,7 @@ redisHandler.redisClient.on('message', function(channel, message)
                 EventCategory: evtCategory,
                 EventTime: evtTime,
                 EventData: evtData,
-                EventParams: JSON.stringify(evtParams)
+                EventParams: evtParams
 
             });
 
