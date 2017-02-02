@@ -5,11 +5,9 @@
   "main": "app.js",
   "dependencies": {
     "amqp": "^0.2.4",
-    "bluebird": "^3.4.7",
     "config": "^1.12.0",
     "dvp-common": "^0.4.5",
     "dvp-dbmodels": "^0.8.1",
-    "moment": "^2.17.1",
     "node-uuid": "^1.4.3",
     "redis": "^0.12.1",
     "restify": "^3.0.2",
