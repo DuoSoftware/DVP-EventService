@@ -1,4 +1,5 @@
 //Subscribe to event channel
+"use strict";
 var redisHandler = require('./RedisHandler.js');
 var dbBackendHandler = require('./DbBackendHandler.js');
 var dbModel = require('dvp-dbmodels');
