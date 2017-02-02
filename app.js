@@ -13,6 +13,7 @@ var amqp = require('amqp');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var util = require('util');
+var moment = require('moment');
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
@@ -225,6 +226,154 @@ server.get('/DVP/API/:version/EventService/Events/EventClass/:eventClass/EventTy
 
 });
 
+server.post('/DVP/API/:version/EventService/EventsByNodes', authorization({resource:"events", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var emptyArr = [];
+
+    var companyId = req.user.company;
+    var tenantId = req.user.tenant;
+
+    if (!companyId || !tenantId)
+    {
+        throw new Error("Invalid company or tenant");
+    }
+
+    try
+    {
+        var nodes = req.body.nodes;
+        var appId = req.query.appId;
+        var page = req.query.page;
+        var pageSize = req.query.pgSize;
+        var startDate = req.query.startDate;
+        var endDate = req.query.endDate;
+        var type = req.query.type;
+
+        logger.debug('[DVP-EventService.EventsByNodes] - [%s] - HTTP Request Received - Params - AppId : %s, Nodes : %s, Page : %s, PageSize: %s', reqId, appId, JSON.stringify(nodes), page, pageSize);
+
+        dbBackendHandler.GetAllEventsByNodes(startDate, endDate, type, appId, companyId, tenantId, nodes, pageSize, (page - 1)*pageSize, function(err, evtList)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR", false, emptyArr);
+                logger.debug('[DVP-EventService.EventsByNodes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, evtList);
+                logger.debug('[DVP-EventService.EventsByNodes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+        })
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, emptyArr);
+        logger.debug('[DVP-EventService.EventsByNodes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.get('/DVP/API/:version/EventService/Events/NodeTypes', authorization({resource:"events", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var emptyArr = [];
+
+    var companyId = req.user.company;
+    var tenantId = req.user.tenant;
+
+    if (!companyId || !tenantId)
+    {
+        throw new Error("Invalid company or tenant");
+    }
+
+    try
+    {
+       logger.debug('[DVP-EventService.GetNodeTypes] - [%s] - HTTP Request Received', reqId);
+
+        dbBackendHandler.GetEventNodes(companyId, tenantId, function(err, nodeTypes)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "Operation Fail", false, emptyArr);
+                logger.debug('[DVP-EventService.GetNodeTypes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(null, "Operation Success", true, nodeTypes);
+                logger.debug('[DVP-EventService.GetNodeTypes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+        })
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "Operation Fail", false, emptyArr);
+        logger.debug('[DVP-EventService.GetNodeTypes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.post('/DVP/API/:version/EventService/Events/NodeType', authorization({resource:"events", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+
+    var companyId = req.user.company;
+    var tenantId = req.user.tenant;
+
+    if (!companyId || !tenantId)
+    {
+        throw new Error("Invalid company or tenant");
+    }
+
+    try
+    {
+        var evtNodeInfo = req.body;
+        logger.debug('[DVP-EventService.SaveNodeTypes] - [%s] - HTTP Request Received', reqId);
+
+        dbBackendHandler.SaveEventNode(evtNodeInfo, companyId, tenantId, function(err, result)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "Operation Fail", false, null);
+                logger.debug('[DVP-EventService.SaveNodeTypes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(null, "Operation Success", true, result);
+                logger.debug('[DVP-EventService.SaveNodeTypes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+
+        })
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "Operation Fail", false, null);
+        logger.debug('[DVP-EventService.SaveNodeTypes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
 server.get('/DVP/API/:version/EventService/Events/App/:appId/Type/:type/NodeCount', authorization({resource:"events", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
@@ -255,7 +404,7 @@ server.get('/DVP/API/:version/EventService/Events/App/:appId/Type/:type/NodeCoun
         //logger.debug('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - HTTP Request Received - Params - sessionId : %s, appId : %s', reqId, sessionId, appId);
 
 
-        dbBackendHandler.GetDevEventDataByAppIdAndDateRange(type,appId,start,end, function (err, evtList) {
+        dbBackendHandler.GetDevEventDataByAppIdAndDateRange(type,appId,start,end, companyId, tenantId, function (err, evtList) {
             if (err) {
                 logger.error('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - dbBackendHandler.GetDevEventDataBySessionId threw an exception', reqId, err);
                 var jsonString = messageFormatter.FormatMessage(err, "Operation Fail", false, emptyArr);

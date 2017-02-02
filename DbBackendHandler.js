@@ -31,7 +31,7 @@ var GetEventDataBySessionId = function(sessionId, callback)
 
 
 
-var GetDevEventDataByAppIdAndDateRange = function(type, appId,starttime,endtime, callback)
+var GetDevEventDataByAppIdAndDateRange = function(type, appId, starttime, endtime, companyId, tenantId, callback)
 {
 
 
@@ -56,6 +56,16 @@ var GetDevEventDataByAppIdAndDateRange = function(type, appId,starttime,endtime,
         query.EventType = type;
     }
 
+    if(companyId){
+
+        query.CompanyId = companyId;
+    }
+
+    if(tenantId){
+
+        query.TenantId = tenantId;
+    }
+
 
     try {
 
@@ -72,6 +82,78 @@ var GetDevEventDataByAppIdAndDateRange = function(type, appId,starttime,endtime,
             logger.error('[DVP-EventService.GetDevEventDataBySessionId] PGSQL Get dvp event records for appid and type query failed', err);
             callback(err, emptyList);
         });
+    }
+    catch(ex)
+    {
+        callback(ex, emptyList);
+    }
+};
+
+
+var GetEventNodes = function(companyId, tenantId, callback)
+{
+    var emptyList = [];
+    try
+    {
+        dbModel.EventTypes.findAll({where: [{CompanyId: companyId},{TenantId: tenantId}]})
+            .then(function (evtNodeList)
+            {
+                callback(null, evtNodeList);
+            }).catch(function(err)
+            {
+                callback(err, emptyList);
+            });
+    }
+    catch(ex)
+    {
+        callback(ex, emptyList);
+    }
+};
+
+var SaveEventNode = function(eventNodeInfo, companyId, tenantId, callback)
+{
+    try
+    {
+        eventNodeInfo.CompanyId = companyId;
+        eventNodeInfo.TenantId = tenantId;
+        var evtObj = dbModel.EventTypes.build(eventNodeInfo);
+
+        evtObj
+            .save()
+            .then(function (rsp)
+            {
+                callback(null, true);
+
+            }).catch(function(err)
+            {
+                callback(err, false);
+            })
+    }
+    catch(ex)
+    {
+        callback(ex, false);
+    }
+};
+
+var GetAllEventsByNodes = function(startDate, endDate, type, appId, companyId, tenantId, nodes, limit, offset, callback)
+{
+    var emptyList = [];
+    try
+    {
+        var query = {where: [{CompanyId: companyId},{TenantId: tenantId}, {EventType: type}, {EventData: appId}, {createdAt: {$lte: endDate, $gte: startDate}}], offset: offset, limit: limit};
+
+        if(nodes && nodes.length > 0)
+        {
+            query.where.push({EventParams: {$in: nodes}});
+        }
+        dbModel.DVPEvent.findAll(query)
+            .then(function (evtList)
+            {
+                callback(null, evtList);
+            }).catch(function(err)
+            {
+                callback(err, emptyList);
+            });
     }
     catch(ex)
     {
@@ -174,6 +256,9 @@ var AddEventData = function(eventInfo, callback)
 };
 
 module.exports.AddEventData = AddEventData;
+module.exports.GetEventNodes = GetEventNodes;
+module.exports.SaveEventNode = SaveEventNode;
+module.exports.GetAllEventsByNodes = GetAllEventsByNodes;
 module.exports.GetEventDataBySessionId = GetEventDataBySessionId;
 module.exports.GetEventDataByClassTypeCat = GetEventDataByClassTypeCat;
 module.exports.GetCallCDRForAppAndSessionId = GetCallCDRForAppAndSessionId;
