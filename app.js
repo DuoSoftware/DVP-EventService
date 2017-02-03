@@ -298,15 +298,13 @@ server.post('/DVP/API/:version/EventService/EventsByNodes/App/:appId/Type/:type/
     {
         var nodes = req.body.nodes;
         var appId = req.params.appId;
-        var page = req.query.page;
-        var pageSize = req.query.pgSize;
         var startDate = req.query.startDate;
         var endDate = req.query.endDate;
         var type = req.params.type;
 
-        logger.debug('[DVP-EventService.EventsByNodesCount] - [%s] - HTTP Request Received - Params - AppId : %s, Nodes : %s, Page : %s, PageSize: %s', reqId, appId, JSON.stringify(nodes), page, pageSize);
+        logger.debug('[DVP-EventService.EventsByNodesCount] - [%s] - HTTP Request Received - Params - AppId : %s, Nodes : %s', reqId, appId, JSON.stringify(nodes));
 
-        dbBackendHandler.GetAllEventsByNodesCount(startDate, endDate, type, appId, companyId, tenantId, nodes, pageSize, (page - 1)*pageSize, function(err, evtList)
+        dbBackendHandler.GetAllEventsByNodesCount(startDate, endDate, type, appId, companyId, tenantId, nodes, function(err, evtList)
         {
             if(err)
             {

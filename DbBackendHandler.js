@@ -163,11 +163,11 @@ var GetAllEventsByNodes = function(startDate, endDate, type, appId, companyId, t
     }
 };
 
-var GetAllEventsByNodesCount = function(startDate, endDate, type, appId, companyId, tenantId, nodes, limit, offset, callback)
+var GetAllEventsByNodesCount = function(startDate, endDate, type, appId, companyId, tenantId, nodes, callback)
 {
     try
     {
-        var query = {where: [{CompanyId: companyId},{TenantId: tenantId}, {EventType: type}, {EventData: appId}, {createdAt: {$lte: endDate, $gte: startDate}}], offset: offset, limit: limit};
+        var query = {where: [{CompanyId: companyId},{TenantId: tenantId}, {EventType: type}, {EventData: appId}, {createdAt: {$lte: endDate, $gte: startDate}}]};
 
         if(nodes && nodes.length > 0)
         {
