@@ -296,7 +296,12 @@ server.post('/DVP/API/:version/EventService/EventsByNodes/App/:appId/Type/:type/
 
     try
     {
-        var nodes = req.body.nodes;
+        var nodes = [];
+
+        if(req.body)
+        {
+            nodes = req.body.nodes;
+        }
         var appId = req.params.appId;
         var startDate = req.query.startDate;
         var endDate = req.query.endDate;
