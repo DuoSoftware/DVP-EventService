@@ -163,6 +163,31 @@ var GetAllEventsByNodes = function(startDate, endDate, type, appId, companyId, t
     }
 };
 
+var GetAllEventsByNodesCount = function(startDate, endDate, type, appId, companyId, tenantId, nodes, limit, offset, callback)
+{
+    try
+    {
+        var query = {where: [{CompanyId: companyId},{TenantId: tenantId}, {EventType: type}, {EventData: appId}, {createdAt: {$lte: endDate, $gte: startDate}}], offset: offset, limit: limit};
+
+        if(nodes && nodes.length > 0)
+        {
+            query.where.push({EventParams: {$in: nodes}});
+        }
+        dbModel.DVPEvent.aggregate('*', 'count', query)
+            .then(function (cnt)
+            {
+                callback(null, cnt);
+            }).catch(function(err)
+            {
+                callback(err, 0);
+            });
+    }
+    catch(ex)
+    {
+        callback(ex, 0);
+    }
+};
+
 
 
 var GetDevEventDataBySessionId = function(sessionId, callback)
@@ -266,3 +291,4 @@ module.exports.GetEventDataByClassTypeCat = GetEventDataByClassTypeCat;
 module.exports.GetCallCDRForAppAndSessionId = GetCallCDRForAppAndSessionId;
 module.exports.GetDevEventDataBySessionId = GetDevEventDataBySessionId;
 module.exports.GetDevEventDataByAppIdAndDateRange = GetDevEventDataByAppIdAndDateRange;
+module.exports.GetAllEventsByNodesCount = GetAllEventsByNodesCount;

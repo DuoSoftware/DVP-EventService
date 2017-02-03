@@ -227,7 +227,7 @@ server.get('/DVP/API/:version/EventService/Events/EventClass/:eventClass/EventTy
 
 });
 
-server.post('/DVP/API/:version/EventService/EventsByNodes', authorization({resource:"events", action:"read"}), function(req, res, next)
+server.post('/DVP/API/:version/EventService/EventsByNodes/App/:appId/Type/:type', authorization({resource:"events", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
@@ -243,12 +243,12 @@ server.post('/DVP/API/:version/EventService/EventsByNodes', authorization({resou
     try
     {
         var nodes = req.body.nodes;
-        var appId = req.query.appId;
+        var appId = req.params.appId;
         var page = req.query.page;
         var pageSize = req.query.pgSize;
         var startDate = req.query.startDate;
         var endDate = req.query.endDate;
-        var type = req.query.type;
+        var type = req.params.type;
 
         logger.debug('[DVP-EventService.EventsByNodes] - [%s] - HTTP Request Received - Params - AppId : %s, Nodes : %s, Page : %s, PageSize: %s', reqId, appId, JSON.stringify(nodes), page, pageSize);
 
@@ -274,6 +274,60 @@ server.post('/DVP/API/:version/EventService/EventsByNodes', authorization({resou
     {
         var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, emptyArr);
         logger.debug('[DVP-EventService.EventsByNodes] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+    }
+
+    return next();
+
+});
+
+server.post('/DVP/API/:version/EventService/EventsByNodes/App/:appId/Type/:type/Count', authorization({resource:"events", action:"read"}), function(req, res, next)
+{
+    var reqId = nodeUuid.v1();
+    var emptyArr = [];
+
+    var companyId = req.user.company;
+    var tenantId = req.user.tenant;
+
+    if (!companyId || !tenantId)
+    {
+        throw new Error("Invalid company or tenant");
+    }
+
+    try
+    {
+        var nodes = req.body.nodes;
+        var appId = req.params.appId;
+        var page = req.query.page;
+        var pageSize = req.query.pgSize;
+        var startDate = req.query.startDate;
+        var endDate = req.query.endDate;
+        var type = req.params.type;
+
+        logger.debug('[DVP-EventService.EventsByNodesCount] - [%s] - HTTP Request Received - Params - AppId : %s, Nodes : %s, Page : %s, PageSize: %s', reqId, appId, JSON.stringify(nodes), page, pageSize);
+
+        dbBackendHandler.GetAllEventsByNodesCount(startDate, endDate, type, appId, companyId, tenantId, nodes, pageSize, (page - 1)*pageSize, function(err, evtList)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR", false, emptyArr);
+                logger.debug('[DVP-EventService.EventsByNodesCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(null, "SUCCESS", true, evtList);
+                logger.debug('[DVP-EventService.EventsByNodesCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+        })
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "ERROR", false, emptyArr);
+        logger.debug('[DVP-EventService.EventsByNodesCount] - [%s] - API RESPONSE : %s', reqId, jsonString);
         res.end(jsonString);
     }
 
