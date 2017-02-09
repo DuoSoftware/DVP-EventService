@@ -1,3 +1,4 @@
+"use strict";
 var redis = require("redis");
 var Config = require('config');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;

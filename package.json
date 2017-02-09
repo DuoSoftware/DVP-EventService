@@ -5,13 +5,13 @@
   "main": "app.js",
   "dependencies": {
     "amqp": "^0.2.4",
-    "dvp-common": "^0.4.5",
     "config": "^1.12.0",
+    "dvp-common": "^0.4.5",
+    "dvp-dbmodels": "^0.8.1",
     "node-uuid": "^1.4.3",
-    "dvp-dbmodels": "^0.4.3",
-    "restify-jwt": "^0.4.0",
     "redis": "^0.12.1",
     "restify": "^3.0.2",
+    "restify-jwt": "^0.4.0",
     "stringify": "^3.1.0"
   },
   "devDependencies": {},
