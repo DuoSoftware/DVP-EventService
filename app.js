@@ -432,7 +432,7 @@ server.post('/DVP/API/:version/EventService/Events/NodeType', authorization({res
 
 });
 
-server.get('/DVP/API/:version/EventService/Events/App/:appId/Type/:type/NodeCount', authorization({resource:"events", action:"read"}), function(req, res, next)
+server.post('/DVP/API/:version/EventService/Events/App/:appId/Type/:type/NodeCount', authorization({resource:"events", action:"read"}), function(req, res, next)
 {
     var reqId = nodeUuid.v1();
     var emptyArr = [];
@@ -458,11 +458,18 @@ server.get('/DVP/API/:version/EventService/Events/App/:appId/Type/:type/NodeCoun
 
         }
 
+        var nodes = [];
+
+        if(req.body && req.body.nodes)
+        {
+            nodes = req.body.nodes
+        }
+
 
         //logger.debug('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - HTTP Request Received - Params - sessionId : %s, appId : %s', reqId, sessionId, appId);
 
 
-        dbBackendHandler.GetDevEventDataByAppIdAndDateRange(type,appId,start,end, companyId, tenantId, function (err, evtList) {
+        dbBackendHandler.GetDevEventDataByAppIdAndDateRange(type,appId,start,end, nodes, companyId, tenantId, function (err, evtList) {
             if (err) {
                 logger.error('[DVP-EventService.GetDevEventDataByAppIdAndDateRange] - [%s] - dbBackendHandler.GetDevEventDataBySessionId threw an exception', reqId, err);
                 var jsonString = messageFormatter.FormatMessage(err, "Operation Fail", false, emptyArr);
