@@ -33,7 +33,7 @@ var GetEventDataBySessionId = function(sessionId, callback)
 
 
 
-var GetDevEventDataByAppIdAndDateRange = function(type, appId, starttime, endtime, companyId, tenantId, callback)
+var GetDevEventDataByAppIdAndDateRange = function(type, appId, starttime, endtime, nodes, companyId, tenantId, callback)
 {
 
 
@@ -66,6 +66,11 @@ var GetDevEventDataByAppIdAndDateRange = function(type, appId, starttime, endtim
     if(tenantId){
 
         query.TenantId = tenantId;
+    }
+
+    if(nodes && nodes.length > 0)
+    {
+        query.EventParams = {$in: nodes};
     }
 
 
