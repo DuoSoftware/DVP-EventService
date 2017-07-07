@@ -87,10 +87,8 @@ var PublishToRedis = function(pattern, message, callback)
 {
     try
     {
-        if(client.connected)
-        {
-            var result = client.publish(pattern, message);
-        }
+       
+        var result = client.publish(pattern, message);
         callback(undefined, true);
 
     }
@@ -104,9 +102,7 @@ var GetFromSet = function(setName, callback)
 {
     try
     {
-        if(client.connected)
-        {
-            client.smembers(setName).keys("*", function (err, setValues)
+        client.smembers(setName).keys("*", function (err, setValues)
             {
                 if(err)
                 {
@@ -118,11 +114,6 @@ var GetFromSet = function(setName, callback)
                 }
                 callback(err, setValues);
             });
-        }
-        else
-        {
-            callback(new Error('Redis Client Disconnected'), undefined);
-        }
 
 
     }
