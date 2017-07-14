@@ -41,7 +41,26 @@ server.use(jwt({secret: secret.Secret}));
 
 var amqpConState = 'CLOSED';
 
-var connection = amqp.createConnection({ host: rmqIp, port: rmqPort});
+var amqpIPs = [];
+if(config.RabbitMQ.ip) {
+    amqpIPs = config.RabbitMQ.ip.split(",");
+}
+
+var connection = amqp.createConnection({
+    host: amqpIPs,
+    port: config.RabbitMQ.port,
+    login: config.RabbitMQ.user,
+    password: config.RabbitMQ.password,
+    vhost: config.RabbitMQ.vhost,
+    noDelay: true,
+    heartbeat:10
+}, {
+    reconnect: true,
+    reconnectBackoffStrategy: 'linear',
+    reconnectExponentialLimit: 120000,
+    reconnectBackoffTime: 1000
+});
+
 
 connection.on('connect', function()
 {
