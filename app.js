@@ -579,7 +579,7 @@ redisHandler.redisClient.on('message', function(channel, message)
 
             });
 
-            if(amqpConState === 'READY')
+            if(/*amqpConState === 'READY'*/false)
             {
                 if(evt.EventClass && evt.EventType && evt.EventCategory)
                 {
