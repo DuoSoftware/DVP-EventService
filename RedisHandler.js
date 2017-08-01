@@ -1,17 +1,85 @@
 "use strict";
-var redis = require("redis");
-var Config = require('config');
+var redis = require("ioredis");
+var config = require('config');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
-var redisIp = Config.Redis.ip;
-var redisPort = Config.Redis.port;
-var redisPassword = Config.Redis.password;
+var redisip = config.Redis.ip;
+var redisport = config.Redis.port;
+var redispass = config.Redis.password;
+var redismode = config.Redis.mode;
+var redisdb = config.Redis.db;
 
-var client = redis.createClient(redisPort, redisIp);
+var redisSetting =  {
+    port:redisport,
+    host:redisip,
+    family: 4,
+    password: redispass,
+    db: redisdb,
+    retryStrategy: function (times) {
+        var delay = Math.min(times * 50, 2000);
+        return delay;
+    },
+    reconnectOnError: function (err) {
 
-client.auth(redisPassword, function (redisResp) {
-    console.log("Redis Auth Response : " + redisResp);
-});
+        return true;
+    }
+};
+
+if(redismode == 'sentinel'){
+
+    if(config.Redis.sentinels && config.Redis.sentinels.hosts && config.Redis.sentinels.port, config.Redis.sentinels.name){
+        var sentinelHosts = config.Redis.sentinels.hosts.split(',');
+        if(Array.isArray(sentinelHosts) && sentinelHosts.length > 2){
+            var sentinelConnections = [];
+
+            sentinelHosts.forEach(function(item){
+
+                sentinelConnections.push({host: item, port:config.Redis.sentinels.port})
+
+            })
+
+            redisSetting = {
+                sentinels:sentinelConnections,
+                name: config.Redis.sentinels.name,
+                password: redispass
+            }
+
+        }else{
+
+            console.log("No enough sentinel servers found .........");
+        }
+
+    }
+}
+
+var client = undefined;
+
+if(redismode != "cluster") {
+    client = new redis(redisSetting);
+}else{
+
+    var redisHosts = redisip.split(",");
+    if(Array.isArray(redisHosts)){
+
+
+        redisSetting = [];
+        redisHosts.forEach(function(item){
+            redisSetting.push({
+                host: item,
+                port: redisport,
+                family: 4,
+                password: redispass});
+        });
+
+        var client = new redis.Cluster([redisSetting]);
+
+    }else{
+
+        client = new redis(redisSetting);
+    }
+
+
+}
 
 var RedisSubscribe = function(channel)
 {
