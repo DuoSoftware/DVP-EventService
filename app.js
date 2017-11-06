@@ -10,7 +10,6 @@ var authorization = require('dvp-common/Authentication/Authorization.js');
 var config = require('config');
 var stringify = require('stringify');
 var nodeUuid = require('node-uuid');
-var amqp = require('amqp');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var util = require('util');
@@ -20,8 +19,6 @@ var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
 var hostVersion = config.Host.Version;
 
-var rmqIp = config.RabbitMQ.IpAddress;
-var rmqPort = config.RabbitMQ.Port;
 
 var server = restify.createServer({
     name: 'localhost',
@@ -39,43 +36,6 @@ server.use(restify.queryParser());
 server.use(restify.bodyParser());
 server.use(jwt({secret: secret.Secret}));
 
-var amqpConState = 'CLOSED';
-
-var amqpIPs = [];
-if(config.RabbitMQ.ip) {
-    amqpIPs = config.RabbitMQ.ip.split(",");
-}
-
-var connection = amqp.createConnection({
-    host: amqpIPs,
-    port: config.RabbitMQ.port,
-    login: config.RabbitMQ.user,
-    password: config.RabbitMQ.password,
-    vhost: config.RabbitMQ.vhost,
-    noDelay: true,
-    heartbeat:10
-}, {
-    reconnect: true,
-    reconnectBackoffStrategy: 'linear',
-    reconnectExponentialLimit: 120000,
-    reconnectBackoffTime: 1000
-});
-
-
-connection.on('connect', function()
-{
-    amqpConState = 'CONNECTED';
-});
-
-connection.on('ready', function()
-{
-    amqpConState = 'READY';
-});
-
-connection.on('error', function()
-{
-    amqpConState = 'CLOSE';
-});
 
 server.get('/DVP/API/:version/EventService/Events/SessionId/:sessionId', authorization({resource:"events", action:"read"}), function(req, res, next)
 {
@@ -93,24 +53,28 @@ server.get('/DVP/API/:version/EventService/Events/SessionId/:sessionId', authori
         var sessionId = req.params.sessionId;
         logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - HTTP Request Received - Params - sessionId : %s', reqId, sessionId);
 
-        dbBackendHandler.GetEventDataBySessionId(sessionId, function(err, evtList)
-        {
-            if(err)
-            {
-                logger.error('[DVP-EventService.GetAllEventsBySessionId] - [%s] - dbBackendHandler.GetEventDataBySessionId threw an exception', reqId, err);
-                var jsonString = messageFormatter.FormatMessage(err, "Operation Fail", false, emptyArr);
-                logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
-                res.end(jsonString);
-            }
-            else
-            {
-                var jsonString = messageFormatter.FormatMessage(null, "Operation Success", true, evtList);
-                logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
-                res.end(jsonString);
-            }
+        if(sessionId && sessionId!= '') {
+            dbBackendHandler.GetEventDataBySessionId(sessionId, function (err, evtList) {
+                if (err) {
+                    logger.error('[DVP-EventService.GetAllEventsBySessionId] - [%s] - dbBackendHandler.GetEventDataBySessionId threw an exception', reqId, err);
+                    var jsonString = messageFormatter.FormatMessage(err, "Operation Fail", false, emptyArr);
+                    logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else {
+                    var jsonString = messageFormatter.FormatMessage(null, "Operation Success", true, evtList);
+                    logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
+                }
 
 
-        })
+            });
+        }else{
+
+            var jsonString = messageFormatter.FormatMessage(undefined, "Empty session id", false, emptyArr);
+            logger.debug('[DVP-EventService.GetAllEventsBySessionId] - [%s] - API RESPONSE : %s', reqId, jsonString);
+            res.end(jsonString);
+        }
 
     }
     catch(ex)
@@ -578,21 +542,6 @@ redisHandler.redisClient.on('message', function(channel, message)
                 EventParams: evtParams
 
             });
-
-            if(amqpConState === 'READY')
-            {
-                if(evt.EventClass && evt.EventType && evt.EventCategory)
-                {
-                    var exc = connection.exchange('amq.topic');
-
-                    var pattern = evt.EventClass + '.' + evt.EventType + '.' + evt.EventCategory;
-
-                    exc.on('open', function()
-                    {
-                        exc.publish(pattern, message);
-                    })
-                }
-            }
 
             dbBackendHandler.AddEventData(evt, function(err, result)
             {
