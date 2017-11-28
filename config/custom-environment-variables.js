@@ -53,7 +53,5 @@ module.exports = {
     "Host":{
         "Port":"HOST_EVENTSERVICE_PORT",
         "Version":"HOST_VERSION"
-    },
-
-    "evtConsumeType": 'HOST_EVENT_CONSUME_TYPE'
+    }
 };
