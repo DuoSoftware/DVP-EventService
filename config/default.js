@@ -38,10 +38,9 @@ module.exports = {
   },
 
 
-  "RabbitMQ":
-  {
-    "ip": "45.55.142.207",
-    "port": 5672,
+  "RabbitMQ": {
+    "ip":"45.55.142.207",
+    "port":"5672",
     "user": "admin",
     "password": "admin",
     "vhost":'/'
@@ -51,5 +50,7 @@ module.exports = {
     "Ip":"0.0.0.0",
     "Port":"8823",
     "Version":"1.0.0.0"
-  }
+  },
+
+  "evtConsumeType": 'amqp'
 };
