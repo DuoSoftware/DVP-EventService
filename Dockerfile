@@ -7,11 +7,20 @@
 
 #EXPOSE 8822
 
-FROM node:9.9.0
-ARG VERSION_TAG
-RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-EventService.git /usr/local/src/eventservice
-RUN cd /usr/local/src/eventservice;
+# FROM node:9.9.0
+# ARG VERSION_TAG
+# RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-EventService.git /usr/local/src/eventservice
+# RUN cd /usr/local/src/eventservice;
+# WORKDIR /usr/local/src/eventservice
+# RUN npm install
+# EXPOSE 8822
+# CMD [ "node", "/usr/local/src/eventservice/app.js" ]
+
+
+FROM node:10-alpine
 WORKDIR /usr/local/src/eventservice
+COPY package*.json ./
 RUN npm install
+COPY . .
 EXPOSE 8822
-CMD [ "node", "/usr/local/src/eventservice/app.js" ]
+CMD [ "node", "app.js" ]
