@@ -14,6 +14,7 @@ var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJ
 var util = require('util');
 var moment = require('moment');
 var amqp = require('amqp');
+var healthcheck = require('dvp-healthcheck/DBHealthChecker');
 
 var hostIp = config.Host.Ip;
 var hostPort = config.Host.Port;
@@ -48,6 +49,8 @@ server.use(restify.queryParser());
 server.use(restify.bodyParser());
 server.use(jwt({secret: secret.Secret}));
 
+var hc = new healthcheck(server, {pg: dbModel.SequelizeConn});
+hc.Initiate();
 
 server.get('/DVP/API/:version/EventService/Events/SessionId/:sessionId', authorization({resource:"events", action:"read"}), function(req, res, next)
 {
