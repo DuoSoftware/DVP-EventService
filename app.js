@@ -47,9 +47,9 @@ server.pre(restify.pre.userAgentConnection());
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
-server.use(jwt({secret: secret.Secret}));
+server.use(jwt({secret: secret.Secret}).unless({path: ['/healthcheck']}));
 
-var hc = new healthcheck(server, {pg: dbModel.SequelizeConn});
+var hc = new healthcheck(server, {pg: dbModel.SequelizeConn});  // redis not used as RedisHandler is commented
 hc.Initiate();
 
 server.get('/DVP/API/:version/EventService/Events/SessionId/:sessionId', authorization({resource:"events", action:"read"}), function(req, res, next)
