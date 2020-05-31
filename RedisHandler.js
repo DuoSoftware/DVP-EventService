@@ -1,7 +1,7 @@
 "use strict";
 var redis = require("ioredis");
 var config = require('config');
-var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common-lite/LogHandler/CommonLogHandler.js').logger;
 
 var redisip = config.Redis.ip;
 var redisport = config.Redis.port;
